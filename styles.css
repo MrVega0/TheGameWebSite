@@ -1,0 +1,105 @@
+/* Reset de estilos para eliminar los márgenes y padding por defecto */
+body, h1, h2, h3, p, ul, li {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+}
+
+header {
+  background-color: #333;
+  color: #fff;
+  padding: 1rem;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+}
+
+nav li {
+  margin-right: 20px;
+}
+
+nav a {
+  text-decoration: none;
+  color: #fff;
+  transition: color 0.3s;
+}
+
+nav a:hover {
+  color: #ffd700; /* Cambia el color al pasar el ratón por encima */
+}
+
+main {
+  padding: 2rem;
+}
+
+.intro {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+footer {
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  padding: 1rem;
+}
+
+.game-board {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  margin: 2rem auto;
+}
+
+.card {
+  width: 150px;
+  height: 200px;
+  background-color: #f0f0f0;
+  border: 2px solid #333;
+  margin: 10px;
+  position: relative;
+}
+
+.card-symbol,
+.deck-symbol {
+  margin-right: 170px;
+  position: absolute;
+  font-size: 24px; /* Tamaño del símbolo */
+  right: -10px; /* Ajusta la posición del símbolo a la derecha */
+  top: -10px; /* Ajusta la posición del símbolo hacia arriba */
+}
+
+
+.deck {
+  width: 150px;
+  height: 200px;
+  background-color: #d8ca6c;
+  border: 2px solid #333;
+  margin: 10px;
+}
+
+
+.cartadetablero {
+max-width: 100%;
+max-height: 100%;
+display: block;
+margin: 0 auto;
+
+}
+
+.bottom-left-card{
+margin-bottom: 120px;
+
+}
+
+.top-left-card{
+  margin-bottom: 120px;
+  
+  }
+  
