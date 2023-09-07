@@ -102,4 +102,22 @@ margin-bottom: 120px;
   margin-bottom: 120px;
   
   }
-  
+
+.carta-generada {
+  /* Establecer el tamaño de la imagen de fondo y otros estilos si es necesario */
+  width: 100px; /* Ancho personalizado */
+  height: 150px; /* Alto personalizado */
+  background-color: #f0f0f0;
+  border: 0px solid #333;
+  margin-right: 0px; /* Espacio entre las cartas */
+  display: inline-block; /* Mostrar en línea horizontal */
+  text-align: center; /* Centra el contenido horizontalmente */
+  vertical-align:middle;
+  position: relative;
+  background-size: cover;
+  /* Otros estilos para las cartas generadas dinámicamente... */
+}
+.carta-generada .number-text {
+  line-height: 150px;
+  font-size: 300%;
+}

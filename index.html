@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>The Game - Juego de Cartas</title>
   <link rel="stylesheet" href="styles.css">
+  
 </head>
 <body>
   <header>
@@ -24,7 +25,6 @@
       <p>Ordena los números y demuestra tus habilidades en este emocionante juego de cartas.</p>
     </section>
   </main>
-
 <!-- ... recordar que las cartas left son las de abajo y las right las de arriba (por alguna razon si lo cambio pierden la forma de cuadrado) ... -->
 
   <section class="game-board">
@@ -41,7 +41,7 @@
     <div class="middle-row">
       
       <div class="deck">
-        <img class="cartadetablero" src="./images/deck.png" alt="">
+        <img class="cartadetablero" src="./images/deck.png" alt="Deck">
       </div>
       
     </div>
@@ -57,8 +57,12 @@
     </div>
   </section>
 
-  <footer>
-    <p>&copy; Juego online realizado por Juan Luis Vega Rocin.</p>
-  </footer>
+  <section class="cartas">
+    <h3>Tu mano</h3>
+    <div id="cartas-container">
+      <!-- Aquí se agregarán las cartas con números aleatorios -->
+    </div>
+  </section>
+  <script src="script.js"></script>
 </body>
 </html>
