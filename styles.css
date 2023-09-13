@@ -121,3 +121,12 @@ margin-bottom: 120px;
   line-height: 150px;
   font-size: 300%;
 }
+
+.carta-numero {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 300%; /* Ajusta el tamaño de la fuente según sea necesario */
+  color: black; /* Color del texto */
+}
