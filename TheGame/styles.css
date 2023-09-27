@@ -58,6 +58,7 @@ footer {
 }
 
 .card {
+  
   width: 150px;
   height: 200px;
   background-color: #f0f0f0;
@@ -103,8 +104,22 @@ margin-bottom: 120px;
   
   }
 
-.carta-generada {
-  /* Establecer el tamaño de la imagen de fondo y otros estilos si es necesario */
+.carta-numero {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 300%; /* Ajusta el tamaño de la fuente según sea necesario */
+  color: black; /* Color del texto */
+}
+
+/* Estilo para el contenedor de las cartas en la mano */
+.mano-container {
+  display: flex;
+}
+
+/* Estilo para cada carta en la mano */
+.carta-mano {
   width: 100px; /* Ancho personalizado */
   height: 150px; /* Alto personalizado */
   background-color: #f0f0f0;
@@ -115,18 +130,10 @@ margin-bottom: 120px;
   vertical-align:middle;
   position: relative;
   background-size: cover;
-  /* Otros estilos para las cartas generadas dinámicamente... */
+  
 }
-.carta-generada .number-text {
+.carta-mano .number-text {
   line-height: 150px;
   font-size: 300%;
 }
 
-.carta-numero {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 300%; /* Ajusta el tamaño de la fuente según sea necesario */
-  color: black; /* Color del texto */
-}

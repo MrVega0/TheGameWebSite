@@ -10,6 +10,7 @@
 <body>
   <header>
     <h1>The Game - Juego Online</h1>
+    <hr>
     <nav>
       <ul>
         <li><a href="index.html">Inicio</a></li>
@@ -26,7 +27,6 @@
     </section>
   </main>
 <!-- ... recordar que las cartas left son las de abajo y las right las de arriba (por alguna razon si lo cambio pierden la forma de cuadrado) ... -->
-
   <section class="game-board">
     <div class="top-row">
       <div class="card top-left-card">
@@ -70,10 +70,10 @@
   </section>
 
   <section class="cartas">
-    <h3>Tu mano</h3>
-    <div id="cartas-container">
-      <!-- Aquí se agregarán las cartas con números aleatorios -->
-    </div>
+    <h3>Mano del jugador</h3>
+    <div id="cartas-container" class="cartas-container">
+      <!-- Las cartas se agregarán aquí -->
+    </div>    
   </section>
   <script src="script.js"></script>
 </body>
