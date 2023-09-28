@@ -75,20 +75,20 @@ shuffle($mazo);
 
 // Tomar las primeras 8 cartas del mazo para la mano
 $cartas_sacadas = array_slice($mazo, 0, 8);
+
+// Mostrar las primeras cartas en el tablero
+$primeras_cartas = [
+    [1],
+    [1],
+    [100],
+    [100]
+];
 ?>
 
 <body>
 
     <div class="board">
         <?php
-        // Mostrar las primeras cartas en el tablero (dos cartas con el número 1 y dos cartas con el número 100)
-        $primeras_cartas = [
-            [1],
-            [1],
-            [100],
-            [100]
-        ];
-
         foreach ($primeras_cartas as $index => $card) {
             echo "<div class='pile' id='pile_$index' ondrop='drop(event, $index)' ondragover='allowDrop(event)'>";
             echo "{$card[0]}";  // Mostrar el número de la carta
@@ -96,6 +96,7 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
         }
         ?>
     </div>
+
 
     <div class="hand" id="hand">
         <?php
@@ -105,7 +106,32 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
         ?>
     </div>
 
+    <!--Robar cartas/Jalar
+    <button onclick="drawCards(2)">Robar cartas</button>-->
+
     <script>
+        //este script es para poner cosas en consola
+        // Mostrar el mazo en la consola
+        console.log("Mazo:", <?php echo json_encode(array_map(function ($card) {
+                                    return $card->getNumber();
+                                }, $mazo)); ?>);
+
+        // Mostrar la mano en la consola
+        console.log("Mano:", <?php echo json_encode(array_map(function ($card) {
+                                    return $card->getNumber();
+                                }, $cartas_sacadas)); ?>);
+
+        function showCardsInPiles() {
+            for (var i = 0; i < 4; i++) {
+                var pile = document.getElementById(`pile_${i}`);
+                console.log(`Pila ${i + 1}: ${pile.innerText.trim()}`);
+            }
+        }
+    </script>
+
+    <script>
+        //script de funciones usables
+
         var mazo = <?php echo json_encode(array_map(function ($card) {
                         return array('number' => $card->getNumber());
                     }, $mazo)); ?>;
@@ -126,27 +152,13 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
                 alert('Se deben colocar por lo menos 2 cartas antes');
             }
         });
+
         // Añade el botón al cuerpo del documento
         document.body.appendChild(button);
 
-        // Define las reglas de colocación en las pilas
-        var rules = {
-            0: function(cardNumber) {
-                return cardNumber > parseInt(document.getElementById('pile_0').innerText);
-            },
-            1: function(cardNumber) {
-                return cardNumber > parseInt(document.getElementById('pile_1').innerText);
-            },
-            2: function(cardNumber) {
-                return cardNumber < parseInt(document.getElementById('pile_2').innerText);
-            },
-            3: function(cardNumber) {
-                return cardNumber < parseInt(document.getElementById('pile_3').innerText);
-            }
-        };
-
-
         function drawCards(numCardsToDraw) {
+            // Simula robar cartas del mazo y agregarlas a la mano
+
             console.log('Intentando robar cartas...');
             for (var i = 0; i < numCardsToDraw; i++) {
                 if (mazo.length > 0) {
@@ -154,13 +166,15 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
                     hand.push(drawnCard); // Agrega la carta a la mano
                     console.log('Carta robada:', drawnCard);
 
+                    // Crea un elemento para mostrar la carta en la mano
                     var cardElement = document.createElement('div');
                     cardElement.classList.add('card');
-                    cardElement.draggable = true;
-                    cardElement.id = 'hand_card_' + (hand.length - 1);
+                    cardElement.draggable = true; // Hace la carta arrastrable
+                    cardElement.id = 'hand_card_' + (hand.length - 1); // ID único para la carta
                     cardElement.innerText = drawnCard.number;
                     document.getElementById('hand').appendChild(cardElement);
 
+                    // Establece el evento de arrastrar en la carta
                     cardElement.addEventListener('dragstart', drag);
                 } else {
                     console.log('No quedan más cartas en el mazo.');
@@ -175,46 +189,41 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
             }
         }
 
-        function checkException(cardNumber, pileNumber) {
-    return (cardNumber === pileNumber - 10) || (cardNumber === pileNumber + 10);
-}
-
         function placeCard(pileIndex) {
-    if (draggedCardId) {
-        var draggedCard = document.getElementById(draggedCardId);
-        var pile = document.getElementById(`pile_${pileIndex}`);
+            if (draggedCardId) {
+                var draggedCard = document.getElementById(draggedCardId);
+                var pile = document.getElementById(`pile_${pileIndex}`);
 
-        if (pile) {
-            var cardNumber = parseInt(draggedCard.innerText);
-            var pileNumber = parseInt(pile.innerText);
+                if (pile) {
+                    // Agrega la carta a la pila
+                    pile.innerHTML = draggedCard.innerHTML;
 
-            // Verifica si la carta puede colocarse según las reglas y la excepción
-            if (rules[pileIndex](cardNumber) || checkException(cardNumber, pileNumber)) {
-                pile.innerHTML = draggedCard.innerHTML;
-                showCardsInPiles();
-                removeCardFromHand(draggedCardId);
-                cartasColocadasTotales++;
-                cartasColocadas++;
-                console.log("cartas a regresar: ", cartasColocadas);
-                console.log("cartas totales colocadas: ", cartasColocadasTotales);
-            } else {
-                alert('No se puede colocar esta carta según las reglas.');
-                console.log("No se puede colocar esta carta según las reglas.");
+                    // Llama a la función para actualizar la pila después de colocar la carta
+                    updatePile(pileIndex, draggedCard.innerText);
+                    // Llama a la función para mostrar las cartas en las pilas
+                    showCardsInPiles();
+                    // Llama a la función para eliminar la carta de la mano
+                    removeCardFromHand(draggedCardId);
+                    cartasColocadasTotales++;
+                    cartasColocadas++;
+                    console.log("cartas totales colocadas: ", cartasColocadasTotales);
+                }
+
+                draggedCardId = null; // Limpiar el ID de la carta arrastrada
             }
+
         }
-
-        draggedCardId = null;
-    }
-}
-
 
         function drop(event, pileIndex) {
             event.preventDefault();
-            placeCard(pileIndex);
+            placeCard(pileIndex); // Llama a la función para colocar la carta en la pila
         }
 
-        function updatePile(pileIndex, cardValue) {
+        function updatePile(pileIndex) {
             var pile = document.getElementById(`pile_${pileIndex}`);
+            var cardValue = pile.innerText;
+
+            // Actualiza el número de la carta en la pila
             pile.innerHTML = cardValue;
         }
 
@@ -227,32 +236,7 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
             event.dataTransfer.setData('text/plain', event.target.id);
         }
 
-        function showCardsInPiles() {
-            for (var i = 0; i < 4; i++) {
-                var pile = document.getElementById(`pile_${i}`);
-                console.log(`Pila ${i + 1}: ${pile.innerText.trim()}`);
-            }
-        }
-
-        //este script es para poner cosas en consola
-    // Mostrar el mazo en la consola
-    console.log("Mazo:", <?php echo json_encode(array_map(function ($card) {
-                                return $card->getNumber();
-                            }, $mazo)); ?>);
-
-    // Mostrar la mano en la consola
-    console.log("Mano:", <?php echo json_encode(array_map(function ($card) {
-                                return $card->getNumber();
-                            }, $cartas_sacadas)); ?>);
-
-    function showCardsInPiles() {
-        for (var i = 0; i < 4; i++) {
-            var pile = document.getElementById(`pile_${i}`);
-            console.log(`Pila ${i + 1}: ${pile.innerText.trim()}`);
-        }
-    }
     </script>
 
 </body>
-
 </html>
