@@ -106,19 +106,22 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
     </div>
 
     <script>
+        var intentosColocacion = 0;
         var mazo = <?php echo json_encode(array_map(function ($card) {
                         return array('number' => $card->getNumber());
                     }, $mazo)); ?>;
         console.log('Mazo en JavaScript:', mazo);
         var draggedCardId;
         var hand = [];
-        var cartasColocadasTotales = 0;
+        var cartasColocadasTotales = 0; //Para checar si gané o no nomas cambie este a 97 y tire una carta :)
         var button = document.createElement('button');
         var cartasColocadas = 0;
         // Crea un elemento de botón
         button.innerText = 'Robar/Jalar'; // Establece el texto del botón
         // Agrega un evento al botón
         button.addEventListener('click', function() {
+            mostrarCartasRestantesEnMazo();
+
             if (cartasColocadas >= 2) {
                 drawCards(cartasColocadas);
                 cartasColocadas = 0;
@@ -176,37 +179,47 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
         }
 
         function checkException(cardNumber, pileNumber) {
-    return (cardNumber === pileNumber - 10) || (cardNumber === pileNumber + 10);
-}
+            return (cardNumber === pileNumber - 10) || (cardNumber === pileNumber + 10);
+        }
 
         function placeCard(pileIndex) {
-    if (draggedCardId) {
-        var draggedCard = document.getElementById(draggedCardId);
-        var pile = document.getElementById(`pile_${pileIndex}`);
+            if (draggedCardId) {
+                var draggedCard = document.getElementById(draggedCardId);
+                var pile = document.getElementById(`pile_${pileIndex}`);
 
-        if (pile) {
-            var cardNumber = parseInt(draggedCard.innerText);
-            var pileNumber = parseInt(pile.innerText);
+                if (pile) {
+                    var cardNumber = parseInt(draggedCard.innerText);
+                    var pileNumber = parseInt(pile.innerText);
 
-            // Verifica si la carta puede colocarse según las reglas y la excepción
-            if (rules[pileIndex](cardNumber) || checkException(cardNumber, pileNumber)) {
-                pile.innerHTML = draggedCard.innerHTML;
-                showCardsInPiles();
-                removeCardFromHand(draggedCardId);
-                cartasColocadasTotales++;
-                cartasColocadas++;
-                console.log("cartas a regresar: ", cartasColocadas);
-                console.log("cartas totales colocadas: ", cartasColocadasTotales);
-            } else {
-                alert('No se puede colocar esta carta según las reglas.');
-                console.log("No se puede colocar esta carta según las reglas.");
+                    if (rules[pileIndex](cardNumber) || checkException(cardNumber, pileNumber)) {
+                        pile.innerHTML = draggedCard.innerHTML;
+                        showCardsInPiles();
+                        removeCardFromHand(draggedCardId);
+                        removeCardFromMazo(cardNumber);
+                        cartasColocadasTotales++;
+                        cartasColocadas++;
+                        console.log("cartas a regresar: ", cartasColocadas);
+                        console.log("cartas totales colocadas: ", cartasColocadasTotales);
+
+                        if (cartasColocadasTotales === 98) {
+                            alert('¡Felicidades! Has colocado todas las cartas. ¡Ganaste!');
+                        }
+
+                    } else {
+                        alert('No se puede colocar esta carta según las reglas.');
+                        console.log("No se puede colocar esta carta según las reglas.");
+                    }
+                }
+
+                draggedCardId = null;
             }
         }
 
-        draggedCardId = null;
-    }
-}
-
+        function removeCardFromMazo(cardNumber) {
+            mazo = mazo.filter(function(card) {
+                return card.number !== cardNumber;
+            });
+        }
 
         function drop(event, pileIndex) {
             event.preventDefault();
@@ -235,24 +248,78 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
         }
 
         //este script es para poner cosas en consola
-    // Mostrar el mazo en la consola
-    console.log("Mazo:", <?php echo json_encode(array_map(function ($card) {
-                                return $card->getNumber();
-                            }, $mazo)); ?>);
+        // Mostrar el mazo
+        console.log("Mazo original:", <?php echo json_encode(array_map(function ($card) {
+                                    return $card->getNumber();
+                                }, $mazo)); ?>);
 
-    // Mostrar la mano en la consola
-    console.log("Mano:", <?php echo json_encode(array_map(function ($card) {
-                                return $card->getNumber();
-                            }, $cartas_sacadas)); ?>);
+        // Mostrar la mano
+        console.log("Mano:", <?php echo json_encode(array_map(function ($card) {
+                                    return $card->getNumber();
+                                }, $cartas_sacadas)); ?>);
 
-    function showCardsInPiles() {
-        for (var i = 0; i < 4; i++) {
-            var pile = document.getElementById(`pile_${i}`);
-            console.log(`Pila ${i + 1}: ${pile.innerText.trim()}`);
+        function showCardsInPiles() {
+            for (var i = 0; i < 4; i++) {
+                var pile = document.getElementById(`pile_${i}`);
+                console.log(`Pila ${i + 1}: ${pile.innerText.trim()}`);
+            }
         }
-    }
+
+        function mostrarCartasRestantesEnMazo() {
+            var cartasRestantes = mazo.slice(hand.length + cartasColocadasTotales).map(function(card) {
+                return card.number;
+            });
+            console.log('Cartas restantes en el mazo:', cartasRestantes);
+        }
     </script>
 
 </body>
+
+<script>
+    /* 
+   //################################### para pruebas unitaras ##########################
+
+
+    function isMoveValid(cardNumber, pileNumber) {
+    const rule = (cardNumber, pileNumber) => cardNumber < pileNumber;
+    const exception = (cardNumber, pileNumber) => Math.abs(cardNumber - pileNumber) === 10;
+    return rule(cardNumber, pileNumber) || exception(cardNumber, pileNumber);
+
+}
+
+// Función para probar isMoveValid
+function runTests() {
+    console.log('Testing isMoveValid function:');
+
+    // Casos de prueba
+    const testCases = [
+        { card: 20, pile: 30, expected: true },  // Regla básica de pila 1
+        { card: 20, pile: 30, expected: true }, // Excepción (10 menos)
+        { card: 30, pile: 20, expected: true }, // Excepción (10 más)
+    ];
+
+    for (const { card, pile, expected } of testCases) {
+        const result = isMoveValid(card, pile);
+        console.log(`Card: ${card}, Pile: ${pile}, Expected: ${expected}, Result: ${result}`);
+        console.log(`Test ${result === expected ? 'passed' : 'failed'}\n`);
+    }
+}
+
+// Ejecutar las pruebas
+runTests();
+
+// Aquí colocas el código para simular la colocación de 98 cartas
+for (let i = 0; i < 98; i++) {
+        let randomPileIndex = Math.floor(Math.random() * 4);
+        let randomCardNumber = Math.floor(Math.random() * 98) + 2;
+        console.log(`Colocando carta ${randomCardNumber} en la pila ${randomPileIndex}`);
+        placeCard(randomPileIndex);
+
+        // Añade un mensaje para verificar que placeCard se está llamando
+        console.log("Llamada a placeCard");
+    }
+    
+*/
+</script>
 
 </html>
