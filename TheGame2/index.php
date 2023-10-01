@@ -4,322 +4,212 @@
 <head>
     <title>The Game</title>
     <style>
-        .card {
-            width: 50px;
-            height: 75px;
-            border: 1px solid black;
-            display: inline-block;
-            margin: 5px;
+        body {
+            padding: auto;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            /* Elimina el margen del cuerpo */
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: grey;
+            /* Color gris claro para el navbar */
+            padding: 15px;
+            /* Ajuste de espaciado interno */
+            border-radius: 3px;
+            /* Borde redondeado */
+            position: fixed;
+            width: 100%;
+            /* Fija el navbar en la parte superior */
+            top: 0;
+            z-index: 1;
+            /* Asegura que el navbar esté sobre otros elementos */
+        }
+
+        nav a {
+            padding: 10px 20px;
+            margin: 0 10px;
+            text-decoration: none;
+            color: black;
+            border: 2px solid black;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        nav a:hover {
+            background-color: #332;
+            color: white;
+        }
+
+        h1 {
+            margin-bottom: 30px;
             text-align: center;
-            line-height: 75px;
-            cursor: pointer;
         }
 
-        .board {
-            margin-bottom: 20px;
+        #todo {
+            max-width: 800px;
+            margin: 0 auto;
+            /* Centra el contenido */
+            padding: 20px;
+            text-align: justify;
+            margin-top: 70px;
+            /* Espacio para el navbar */
         }
 
-        .hand {
+        #tablero-rules {
+            margin-left: 50px;
+        }
+
+        #startButton {
+            padding: 20px 40px;
+            font-size: 24px;
+            display: block;
+            margin: 0 auto;
+            margin-top: 100px;
+        }
+
+        #logo {
+            position: fixed;
+            top: 1px;
+            /* Ajuste de la posición en relación al navbar */
+            left: 10px;
+            padding: 10px;
+            z-index: 2;
+            /* Asegura que el logo esté sobre el navbar */
+        }
+
+        #logo img {
+            height: 50px;
+        }
+
+        #descargar-reglas {
             text-align: center;
+            margin-top: 20px;
         }
 
-        .hand .card {
-            width: 50px;
-            height: 75px;
-            font-size: 14px;
-        }
-
-        .pile {
-            width: 100px;
-            height: 125px;
-            border: 1px solid black;
-            display: inline-block;
-            margin: 5px;
-            text-align: center;
-            line-height: 75px;
-            cursor: pointer;
-        }
+       
     </style>
 </head>
-<?php
-// Representa una carta
-class Card
-{
-    private $number;
-
-    public function __construct($number)
-    {
-        $this->number = $number;
-    }
-
-    public function getNumber()
-    {
-        return $this->number;
-    }
-}
-
-// Genera el mazo con números del 2 al 99
-function generarMazo()
-{
-    $mazo = [];
-    for ($i = 2; $i <= 99; $i++) {
-        $mazo[] = new Card($i);
-    }
-    return $mazo;
-}
-
-$mazo = generarMazo();
-
-// Reorganiza aleatoriamente el mazo
-shuffle($mazo);
-
-// Tomar las primeras 8 cartas del mazo para la mano
-$cartas_sacadas = array_slice($mazo, 0, 8);
-?>
 
 <body>
+    <nav>
+        <a href="#about">Acerca del Juego</a>
+        <a href="#rules">¿Como Jugar?</a>
+        <a href="#tablero">Tablero</a>
+        <a href="#cards">Cartas</a>
+    </nav>
+    <div id="logo"><a href="index.php"><img src="images/icono.png" alt="Logo"></a></div>
 
-    <div class="board">
-        <?php
-        // Mostrar las primeras cartas en el tablero (dos cartas con el número 1 y dos cartas con el número 100)
-        $primeras_cartas = [
-            [1],
-            [1],
-            [100],
-            [100]
-        ];
+    <div id="todo">
+        <h1>Bienvenido</h1>
 
-        foreach ($primeras_cartas as $index => $card) {
-            echo "<div class='pile' id='pile_$index' ondrop='drop(event, $index)' ondragover='allowDrop(event)'>";
-            echo "{$card[0]}";  // Mostrar el número de la carta
-            echo "</div>";
-        }
-        ?>
-    </div>
 
-    <div class="hand" id="hand">
-        <?php
-        foreach ($cartas_sacadas as $index => $card) {
-            echo "<div class='card' id='card_$index' draggable='true' ondragstart='drag(event)'>{$card->getNumber()}</div>";
-        }
-        ?>
-    </div>
+        <button id="startButton" onclick="startGame()">Iniciar Juego</button>
 
-    <script>
-        var intentosColocacion = 0;
-        var mazo = <?php echo json_encode(array_map(function ($card) {
-                        return array('number' => $card->getNumber());
-                    }, $mazo)); ?>;
-        console.log('Mazo en JavaScript:', mazo);
-        var draggedCardId;
-        var hand = [];
-        var cartasColocadasTotales = 0; //Para checar si gané o no nomas cambie este a 97 y tire una carta :)
-        var button = document.createElement('button');
-        var cartasColocadas = 0;
-        // Crea un elemento de botón
-        button.innerText = 'Robar/Jalar'; // Establece el texto del botón
-        // Agrega un evento al botón
-        button.addEventListener('click', function() {
-            mostrarCartasRestantesEnMazo();
+        <section style="margin-top: 100px;">
+            <h2>Acerca de The Game</h2>
+            <p>
+                The Game será es su adversario y como equipo deben intentar vencerlo. Aunque las reglas sean sencillas, no será fácil alcanzar el objetivo.
+                Deberán descartar la mayor cantidad posible en orden ascendente y descendente,
+                pero sin comunicar más de lo permitido. Actúen como equipo y tomen decisiones en conjunto, es la única forma de ganarle a The Game.
+            </p>
+            <br>
+        </section>
+        <section id="all">
+            <section id="tablero">
+                <h2>Reglas y cómo jugar.</h2>
 
-            if (cartasColocadas >= 2) {
-                drawCards(cartasColocadas);
-                cartasColocadas = 0;
-            } else {
-                alert('Se deben colocar por lo menos 2 cartas antes');
+                <h3>Cartas del tablero.</h3>
+                <div id="tablero-rules">
+                    <div class="rowTablero" style="
+                                display:flex;
+                                line-height:500px;
+                        ">
+                        <img src="images/1.png" alt="Carta con el numero 1" style="
+                                display:flex;
+                                height:160px;        
+                        ">
+                        <img src="images/1.png" alt="Carta con el numero 1" style="
+                                display:flex;
+                                height:160px;        
+                        ">
+                    </div>
+                    <div class="rowTablero" style="
+                                display:flex;
+                                line-height:500px;
+                        ">
+                        <img src="images/100.png" alt="Carta con el numero 100" style="
+                                display:flex;
+                                height:160px;        
+                        ">
+                        <img src="images/100.png" alt="Carta con el numero 100" style="
+                                display:flex;
+                                height:160px;        
+                        ">
+                    </div>
+                </div>
+            </section>
+            <br><br>
+            <section id="cards">
+                <h3>Cartas de juego.</h3>
+                <div class="row">
+                    <img src="images/cartas.png" alt="Cartas" style="
+                                display:flex;
+                                height:130px; 
+                        ">
+                </div>
+            </section>
+            <br><br>
+            <section id="rules">
+                <h3>¿Cómo jugar?</h3>
+                <ol>
+                    <li>
+                        <strong>Objetivo:</strong> El objetivo del juego es colocar todas las cartas en las pilas, en
+                        orden ascendente o descendente, según corresponda.
+                    </li>
+                    <li>
+                        <strong>Colocación inicial:</strong> Al principio, estan colocadas dos cartas con el número 1 y dos
+                        cartas con el número 100 en el tablero.
+                    </li>
+                    <li>
+                        <strong>Cartas en mano:</strong> Tienes 8 cartas en tu mano para empezar a jugar.
+                    </li>
+                    <li>
+                        <strong>Colocación en pilas:</strong> Debes colocar las cartas de tu mano en las pilas
+                        respetando las siguientes reglas:
+                        <ul>
+                            <li>En las pilas ascendentes (con el número 1), solo puedes colocar cartas con un número mayor que el de
+                                la carta superior.</li>
+                            <li>En las pilas descendentes (con el número 100), solo puedes colocar cartas con un número menor que el de
+                                la carta superior.</li>
+                            <li>Si hay una diferencia de 10 (ej. 20 y 30 en cartas descendente o 50 y 40 en orden ascendente), puedes colocar una carta sobre la otra
+                                sin importar la dirección de la pila.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong>Ganar el juego:</strong> Ganas si colocas todas las cartas en las pilas, sin tener
+                        ninguna carta restante en tu mano ni en el mazo.
+                    </li>
+                    <li>
+                        <strong>Robar/Jalar cartas:</strong> Puedes robar/jalar más cartas del mazo si has colocado
+                        al menos 2 cartas previamente. Si no puedes colocar 2 cartas, no podrás robar/jalar más
+                        cartas.
+                    </li>
+                </ol>
+                <div id="descargar-reglas">
+                    <p>Para más información, descarga las <a href="documentos/reglas-the-game.pdf" download>reglas</a>.</p>
+                </div>
+            </section>
+        </section>
+        <br><br>
+        </tbody>
+        <script>
+            function startGame() {
+                window.location.href = "thegame.php";
             }
-        });
-        // Añade el botón al cuerpo del documento
-        document.body.appendChild(button);
-
-        // Define las reglas de colocación en las pilas
-        var rules = {
-            0: function(cardNumber) {
-                return cardNumber > parseInt(document.getElementById('pile_0').innerText);
-            },
-            1: function(cardNumber) {
-                return cardNumber > parseInt(document.getElementById('pile_1').innerText);
-            },
-            2: function(cardNumber) {
-                return cardNumber < parseInt(document.getElementById('pile_2').innerText);
-            },
-            3: function(cardNumber) {
-                return cardNumber < parseInt(document.getElementById('pile_3').innerText);
-            }
-        };
-
-
-        function drawCards(numCardsToDraw) {
-            console.log('Intentando robar cartas...');
-            for (var i = 0; i < numCardsToDraw; i++) {
-                if (mazo.length > 0) {
-                    var drawnCard = mazo.pop(); // Obtén la carta del mazo
-                    hand.push(drawnCard); // Agrega la carta a la mano
-                    console.log('Carta robada:', drawnCard);
-
-                    var cardElement = document.createElement('div');
-                    cardElement.classList.add('card');
-                    cardElement.draggable = true;
-                    cardElement.id = 'hand_card_' + (hand.length - 1);
-                    cardElement.innerText = drawnCard.number;
-                    document.getElementById('hand').appendChild(cardElement);
-
-                    cardElement.addEventListener('dragstart', drag);
-                } else {
-                    console.log('No quedan más cartas en el mazo.');
-                }
-            }
-        }
-
-        function removeCardFromHand(cardId) {
-            var card = document.getElementById(cardId);
-            if (card) {
-                card.remove();
-            }
-        }
-
-        function checkException(cardNumber, pileNumber) {
-            return (cardNumber === pileNumber - 10) || (cardNumber === pileNumber + 10);
-        }
-
-        function placeCard(pileIndex) {
-            if (draggedCardId) {
-                var draggedCard = document.getElementById(draggedCardId);
-                var pile = document.getElementById(`pile_${pileIndex}`);
-
-                if (pile) {
-                    var cardNumber = parseInt(draggedCard.innerText);
-                    var pileNumber = parseInt(pile.innerText);
-
-                    if (rules[pileIndex](cardNumber) || checkException(cardNumber, pileNumber)) {
-                        pile.innerHTML = draggedCard.innerHTML;
-                        showCardsInPiles();
-                        removeCardFromHand(draggedCardId);
-                        removeCardFromMazo(cardNumber);
-                        cartasColocadasTotales++;
-                        cartasColocadas++;
-                        console.log("cartas a regresar: ", cartasColocadas);
-                        console.log("cartas totales colocadas: ", cartasColocadasTotales);
-
-                        if (cartasColocadasTotales === 98) {
-                            alert('¡Felicidades! Has colocado todas las cartas. ¡Ganaste!');
-                        }
-
-                    } else {
-                        alert('No se puede colocar esta carta según las reglas.');
-                        console.log("No se puede colocar esta carta según las reglas.");
-                    }
-                }
-
-                draggedCardId = null;
-            }
-        }
-
-        function removeCardFromMazo(cardNumber) {
-            mazo = mazo.filter(function(card) {
-                return card.number !== cardNumber;
-            });
-        }
-
-        function drop(event, pileIndex) {
-            event.preventDefault();
-            placeCard(pileIndex);
-        }
-
-        function updatePile(pileIndex, cardValue) {
-            var pile = document.getElementById(`pile_${pileIndex}`);
-            pile.innerHTML = cardValue;
-        }
-
-        function allowDrop(event) {
-            event.preventDefault();
-        }
-
-        function drag(event) {
-            draggedCardId = event.target.id;
-            event.dataTransfer.setData('text/plain', event.target.id);
-        }
-
-        function showCardsInPiles() {
-            for (var i = 0; i < 4; i++) {
-                var pile = document.getElementById(`pile_${i}`);
-                console.log(`Pila ${i + 1}: ${pile.innerText.trim()}`);
-            }
-        }
-
-        //este script es para poner cosas en consola
-        // Mostrar el mazo
-        console.log("Mazo original:", <?php echo json_encode(array_map(function ($card) {
-                                    return $card->getNumber();
-                                }, $mazo)); ?>);
-
-        // Mostrar la mano
-        console.log("Mano:", <?php echo json_encode(array_map(function ($card) {
-                                    return $card->getNumber();
-                                }, $cartas_sacadas)); ?>);
-
-        function showCardsInPiles() {
-            for (var i = 0; i < 4; i++) {
-                var pile = document.getElementById(`pile_${i}`);
-                console.log(`Pila ${i + 1}: ${pile.innerText.trim()}`);
-            }
-        }
-
-        function mostrarCartasRestantesEnMazo() {
-            var cartasRestantes = mazo.slice(hand.length + cartasColocadasTotales).map(function(card) {
-                return card.number;
-            });
-            console.log('Cartas restantes en el mazo:', cartasRestantes);
-        }
-    </script>
-
+        </script>
 </body>
-
-<script>
-    /* 
-   //################################### para pruebas unitaras ##########################
-
-
-    function isMoveValid(cardNumber, pileNumber) {
-    const rule = (cardNumber, pileNumber) => cardNumber < pileNumber;
-    const exception = (cardNumber, pileNumber) => Math.abs(cardNumber - pileNumber) === 10;
-    return rule(cardNumber, pileNumber) || exception(cardNumber, pileNumber);
-
-}
-
-// Función para probar isMoveValid
-function runTests() {
-    console.log('Testing isMoveValid function:');
-
-    // Casos de prueba
-    const testCases = [
-        { card: 20, pile: 30, expected: true },  // Regla básica de pila 1
-        { card: 20, pile: 30, expected: true }, // Excepción (10 menos)
-        { card: 30, pile: 20, expected: true }, // Excepción (10 más)
-    ];
-
-    for (const { card, pile, expected } of testCases) {
-        const result = isMoveValid(card, pile);
-        console.log(`Card: ${card}, Pile: ${pile}, Expected: ${expected}, Result: ${result}`);
-        console.log(`Test ${result === expected ? 'passed' : 'failed'}\n`);
-    }
-}
-
-// Ejecutar las pruebas
-runTests();
-
-// Aquí colocas el código para simular la colocación de 98 cartas
-for (let i = 0; i < 98; i++) {
-        let randomPileIndex = Math.floor(Math.random() * 4);
-        let randomCardNumber = Math.floor(Math.random() * 98) + 2;
-        console.log(`Colocando carta ${randomCardNumber} en la pila ${randomPileIndex}`);
-        placeCard(randomPileIndex);
-
-        // Añade un mensaje para verificar que placeCard se está llamando
-        console.log("Llamada a placeCard");
-    }
-    
-*/
-</script>
 
 </html>
