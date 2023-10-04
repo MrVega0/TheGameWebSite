@@ -4,6 +4,21 @@
 <head>
     <title>The Game</title>
     <style>
+        .pile,
+        .hand .card {
+            background-image: url('images/cartaBase.png');
+            
+            background-size: contain;
+            /* O ajusta según sea necesario */
+            background-repeat: no-repeat;
+        }
+
+
+        body {
+            font-family: Arial, sans-serif;
+            margin-top: 10%;
+        }
+
         .card {
             width: 50px;
             height: 75px;
@@ -16,28 +31,58 @@
         }
 
         .board {
-            margin-bottom: 20px;
+            margin-bottom: 10px;
+            text-align: center;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 5px;
+            justify-items: center;
+            align-items: center;
         }
 
         .hand {
             text-align: center;
+            text-decoration: solid;
+            clear: both;
+            
         }
 
         .hand .card {
-            width: 50px;
-            height: 75px;
-            font-size: 14px;
+            width: 75px;
+            height: 100px;
+            font-size: 20px;
         }
 
         .pile {
-            width: 100px;
-            height: 125px;
+            width: 180px;
+            height: 250px;
             border: 1px solid black;
-            display: inline-block;
-            margin: 5px;
             text-align: center;
-            line-height: 75px;
+            line-height: 255px;
             cursor: pointer;
+        }
+
+        #pile_0 {
+            grid-column: 1;
+            grid-row: 1;
+        }
+
+        #pile_1 {
+            grid-column: 1;
+            grid-row: 2;
+            margin-bottom: 70px;
+        }
+
+        #pile_2 {
+            grid-column: 2;
+            grid-row: 1;
+        }
+
+        #pile_3 {
+            grid-column: 2;
+            grid-row: 2;
+            margin-bottom: 70px;
         }
     </style>
 </head>
@@ -101,6 +146,7 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
     <div class="hand" id="hand">
         <?php
         foreach ($cartas_sacadas as $index => $card) {
+
             echo "<div class='card' id='card_$index' draggable='true' ondragstart='drag(event)'>{$card->getNumber()}</div>";
         }
         ?>
@@ -127,7 +173,7 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
                 drawCards(cartasColocadas);
                 cartasColocadas = 0;
             } else {
-                alert('Se deben colocar por lo menos 2 cartas antes');
+                alert('Por favor, para poder jalar coloca al menos 2 cartas antes. ');
             }
         });
         // Añade el botón al cuerpo del documento
@@ -149,11 +195,42 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
             }
         };
 
+        function verificarPerdida() {
+            var colocacionPosible = false;
+            var handCards = document.getElementById('hand').getElementsByClassName('card');
+
+            for (var i = 0; i < handCards.length; i++) {
+                var cardNumber = parseInt(handCards[i].innerText);
+
+                for (var j = 0; j < 4; j++) {
+                    if (rules[j](cardNumber) || checkException(cardNumber, parseInt(document.getElementById(`pile_${j}`).innerText))) {
+                        colocacionPosible = true;
+                        break;
+                    }
+                }
+
+                if (colocacionPosible) {
+                    break;
+                }
+            }
+
+            var robarPosible = cartasColocadas >= 2;
+
+            console.log('Colocación posible:', colocacionPosible);
+            console.log('Robar posible:', robarPosible);
+
+            if (!colocacionPosible && !robarPosible) {
+                alert('¡Has perdido! No puedes colocar cartas y no puedes robar más del mazo.');
+            }
+        }
+
+
+
         function ordenarCartasEnMano() {
             var manoDiv = document.getElementById('hand');
             var cards = manoDiv.getElementsByClassName('card');
             var sortedCards = Array.from(cards).sort(function(a, b) {
-                return parseInt(b.innerText) - parseInt(a.innerText);
+                return parseInt(a.innerText) - parseInt(b.innerText);
             });
 
             for (var i = 0; i < sortedCards.length; i++) {
@@ -169,7 +246,7 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
                     var drawnCard = mazo.pop(); // Obtén la carta del mazo
                     hand.push(drawnCard); // Agrega la carta a la mano
                     console.log('Carta robada:', drawnCard);
-                    
+
                     var cardElement = document.createElement('div');
                     cardElement.classList.add('card');
                     cardElement.draggable = true;
@@ -181,10 +258,14 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
                     console.log('No quedan más cartas en el mazo.');
                 }
             }
+            verificarPerdida();
             ordenarCartasEnMano();
+
         }
         ordenarCartasEnMano();
-        
+
+
+
         function removeCardFromHand(cardId) {
             var card = document.getElementById(cardId);
             if (card) {
@@ -194,6 +275,11 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
 
         function checkException(cardNumber, pileNumber) {
             return (cardNumber === pileNumber - 10) || (cardNumber === pileNumber + 10);
+        }
+
+        function alertPlaceCard(alertaCartasColocadas) {
+
+
         }
 
         function placeCard(pileIndex) {
@@ -227,6 +313,7 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
 
                 draggedCardId = null;
             }
+            verificarPerdida();
             ordenarCartasEnMano();
         }
 
