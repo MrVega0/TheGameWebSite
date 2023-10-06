@@ -1,0 +1,159 @@
+.hand .card {
+    background-image: url('../images/cartaBase.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+
+body {
+    font-family: Arial, sans-serif;
+    margin-bottom: 5%;
+    background-image: url('../images/fondo.png');
+    background-size: cover;
+    /* Ajusta la imagen para cubrir todo el fondo */
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    /* Fija la imagen de fondo para evitar el desplazamiento */
+}
+
+
+.card {
+    width: 50px;
+    height: 75px;
+    border: 0px solid black;
+    /*deje el border en 0 para que solo se vea la carta */
+    display: inline-block;
+    margin: 1px;
+    text-align: center;
+    line-height: 75px;
+    cursor: pointer;
+}
+
+.board {
+    margin-bottom: 10px;
+    text-align: center;
+    display: grid;
+    grid-template-columns: 0.2fr 0.2fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 1px;
+    justify-items: center;
+    align-items: center;
+}
+
+.hand {
+    text-align: center;
+    text-decoration: solid;
+    clear: both;
+    margin-bottom: 50px;
+
+}
+
+.hand .card {
+    width: 75px;
+    height: 100px;
+    font-size: 20px;
+    line-height: 100px;
+    font-weight: bold;
+}
+
+.pile {
+    width: 180px;
+    height: 250px;
+    border: 0px solid black;
+    /*deje el border en 0 para que solo se vea la carta */
+    text-align: center;
+    line-height: 255px;
+    cursor: pointer;
+    font-size: 30px;
+    font-weight: bold;
+    margin: 2px;
+}
+
+#pile_0 {
+    /*Pila con 1 */
+    grid-column: 1;
+    grid-row: 1;
+    margin-left: 310%;
+    background-image: url('../images/cartaBaseUp.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+
+}
+
+#pile_1 {
+    /*Pila con 1 */
+    grid-column: 1;
+    grid-row: 2;
+    margin-bottom: 70px;
+    margin-left: 310%;
+    background-image: url('../images/cartaBaseUp.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+
+}
+
+#pile_2 {
+    /*Pila con 100 */
+    grid-column: 2;
+    grid-row: 1;
+    margin-left: 295%;
+    background-image: url('../images/cartaBaseDown.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+
+}
+
+#pile_3 {
+    /*Pila con 100 */
+    grid-column: 2;
+    grid-row: 2;
+    margin-bottom: 70px;
+    margin-left: 295%;
+    background-image: url('../images/cartaBaseDown.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+
+}
+
+#robarButton {
+    cursor: pointer;
+    width: 120px;
+    height: 155px;
+    border: none;
+    background-image: url('../images/Deck.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-color: transparent;
+    position: fixed;
+    top: 35%;
+    left: 15%;
+
+}
+
+#exitButton {
+    display: inline-block;
+    padding: 15px 25px;
+    font-size: 16px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    outline: none;
+    color: #fff;
+    background-color: #4CAF50;
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 9px #999;
+    margin-left: 5%;
+    position: fixed;
+    top: 5%;
+}
+
+#exitButton:hover {
+    background-color: #3e8e41
+}
+
+#exitButton:active {
+    background-color: #3e8e41;
+    box-shadow: 0 5px #666;
+    transform: translateY(4px);
+}

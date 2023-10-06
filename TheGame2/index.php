@@ -2,95 +2,9 @@
 <html>
 
 <head>
+    <link rel="stylesheet" type="text/css" href="style/index.css">
     <title>The Game</title>
-    <style>
-        body {
-            padding: auto;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            /* Elimina el margen del cuerpo */
-        }
 
-        nav {
-            display: flex;
-            justify-content: center;
-            background-color: grey;
-            /* Color gris claro para el navbar */
-            padding: 15px;
-            /* Ajuste de espaciado interno */
-            border-radius: 3px;
-            /* Borde redondeado */
-            position: fixed;
-            width: 100%;
-            /* Fija el navbar en la parte superior */
-            top: 0;
-            z-index: 1;
-            /* Asegura que el navbar esté sobre otros elementos */
-        }
-
-        nav a {
-            padding: 10px 20px;
-            margin: 0 10px;
-            text-decoration: none;
-            color: black;
-            border: 2px solid black;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-
-        nav a:hover {
-            background-color: #332;
-            color: white;
-        }
-
-        h1 {
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        #todo {
-            max-width: 800px;
-            margin: 0 auto;
-            /* Centra el contenido */
-            padding: 20px;
-            text-align: justify;
-            margin-top: 70px;
-            /* Espacio para el navbar */
-        }
-
-        #tablero-rules {
-            margin-left: 50px;
-        }
-
-        #startButton {
-            padding: 20px 40px;
-            font-size: 24px;
-            display: block;
-            margin: 0 auto;
-            margin-top: 100px;
-        }
-
-        #logo {
-            position: fixed;
-            top: 1px;
-            /* Ajuste de la posición en relación al navbar */
-            left: 10px;
-            padding: 10px;
-            z-index: 2;
-            /* Asegura que el logo esté sobre el navbar */
-        }
-
-        #logo img {
-            height: 50px;
-        }
-
-        #descargar-reglas {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-       
-    </style>
 </head>
 
 <body>
@@ -99,15 +13,18 @@
         <a href="#rules">¿Como Jugar?</a>
         <a href="#tablero">Tablero</a>
         <a href="#cards">Cartas</a>
+        <a href="#modes">Otros modos</a>
     </nav>
     <div id="logo"><a href="index.php"><img src="images/icono.png" alt="Logo"></a></div>
 
     <div id="todo">
         <h1>Bienvenido</h1>
+        <div class="row" id="botonesJuego" style="display:flex; ">
+            <button id="startButton" onclick="startGame()">Iniciar Juego</button>
+            <button id="startButton" onclick="continueGame()">Continuar Juego</button>
+        </div>
 
-
-        <button id="startButton" onclick="startGame()">Iniciar Juego</button>
-
+        <section id="about"></section>
         <section style="margin-top: 100px;">
             <h2>Acerca de The Game</h2>
             <p>
@@ -122,6 +39,7 @@
                 <h2>Reglas y cómo jugar.</h2>
 
                 <h3>Cartas del tablero.</h3>
+                <p>El tablero conciste en 4 cartas iniciales, dos cartas con el numero 1 y dos con el 100.</p>
                 <div id="tablero-rules">
                     <div class="rowTablero" style="
                                 display:flex;
@@ -154,6 +72,8 @@
             <br><br>
             <section id="cards">
                 <h3>Cartas de juego.</h3>
+                <p>Las cartas de juego son 98 (cartas con valores del 2 al 99).</p>
+
                 <div class="row">
                     <img src="images/cartas.png" alt="Cartas" style="
                                 display:flex;
@@ -207,6 +127,13 @@
         </tbody>
         <script>
             function startGame() {
+                document.cookie = "mantener=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                document.cookie = "gameState=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                window.location.href = "thegame.php";
+            }
+            function continueGame() {
+                var expDate = new Date();
+                expDate.setTime(expDate.getTime() + (2 * 60 * 60 * 1000));
                 window.location.href = "thegame.php";
             }
         </script>

@@ -1,0 +1,85 @@
+
+        body {
+            padding: auto;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            /* Elimina el margen del cuerpo */
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: grey;
+            /* Color gris claro para el navbar */
+            padding: 15px;
+            /* Ajuste de espaciado interno */
+            border-radius: 3px;
+            /* Borde redondeado */
+            position: fixed;
+            width: 100%;
+            /* Fija el navbar en la parte superior */
+            top: 0;
+            z-index: 1;
+            /* Asegura que el navbar esté sobre otros elementos */
+        }
+
+        nav a {
+            padding: 10px 20px;
+            margin: 0 10px;
+            text-decoration: none;
+            color: black;
+            border: 2px solid black;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        nav a:hover {
+            background-color: #332;
+            color: white;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        #todo {
+            max-width: 800px;
+            margin: 0 auto;
+            /* Centra el contenido */
+            padding: 20px;
+            text-align: justify;
+            margin-top: 70px;
+            /* Espacio para el navbar */
+        }
+
+        #tablero-rules {
+            margin-left: 50px;
+        }
+
+        #startButton {
+            padding: 20px 40px;
+            font-size: 24px;
+            display: block;
+            margin: 0 auto;
+            margin-top: 100px;
+        }
+
+        #logo {
+            position: fixed;
+            top: 1px;
+            /* Ajuste de la posición en relación al navbar */
+            left: 10px;
+            padding: 10px;
+            z-index: 2;
+            /* Asegura que el logo esté sobre el navbar */
+        }
+
+        #logo img {
+            height: 50px;
+        }
+
+        #descargar-reglas {
+            text-align: center;
+            margin-top: 20px;
+        }

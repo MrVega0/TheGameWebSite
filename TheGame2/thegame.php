@@ -2,92 +2,24 @@
 <html>
 
 <head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" type="text/css" href="style/thegame.css">
     <title>The Game</title>
-    <style>
-        .pile,
-        .hand .card {
-            background-image: url('images/cartaBase.png');
-            
-            background-size: contain;
-            /* O ajusta según sea necesario */
-            background-repeat: no-repeat;
-        }
 
-
-        body {
-            font-family: Arial, sans-serif;
-            margin-top: 10%;
-        }
-
-        .card {
-            width: 50px;
-            height: 75px;
-            border: 1px solid black;
-            display: inline-block;
-            margin: 5px;
-            text-align: center;
-            line-height: 75px;
-            cursor: pointer;
-        }
-
-        .board {
-            margin-bottom: 10px;
-            text-align: center;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr;
-            gap: 5px;
-            justify-items: center;
-            align-items: center;
-        }
-
-        .hand {
-            text-align: center;
-            text-decoration: solid;
-            clear: both;
-            
-        }
-
-        .hand .card {
-            width: 75px;
-            height: 100px;
-            font-size: 20px;
-        }
-
-        .pile {
-            width: 180px;
-            height: 250px;
-            border: 1px solid black;
-            text-align: center;
-            line-height: 255px;
-            cursor: pointer;
-        }
-
-        #pile_0 {
-            grid-column: 1;
-            grid-row: 1;
-        }
-
-        #pile_1 {
-            grid-column: 1;
-            grid-row: 2;
-            margin-bottom: 70px;
-        }
-
-        #pile_2 {
-            grid-column: 2;
-            grid-row: 1;
-        }
-
-        #pile_3 {
-            grid-column: 2;
-            grid-row: 2;
-            margin-bottom: 70px;
-        }
-    </style>
 </head>
 <?php
-//Funciones de inicianicializacion
+$gameState = isset($_COOKIE['gameState']) ? json_decode($_COOKIE['gameState'], true) : null;
+
+// Si hay un estado de juego almacenado, usarlo para restaurar el juego
+if ($gameState) {
+    $mazo = $gameState['mazo'];
+    $cartasColocadasTotales = $gameState['cartasColocadasTotales'];
+    $cartasColocadas = $gameState['cartasColocadas'];
+
+    $estadoTablero = $gameState['estadoTablero'];
+    $estadoMano = $gameState['estadoMano'];
+}
+
 $mazo = generarMazo();
 // Reorganiza aleatoriamente el mazo
 shuffle($mazo);
@@ -136,11 +68,17 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
         ];
 
         foreach ($primeras_cartas as $index => $card) {
+
             echo "<div class='pile' id='pile_$index' ondrop='drop(event, $index)' ondragover='allowDrop(event)'>";
             echo "{$card[0]}";  // Mostrar el número de la carta
+        ?>
+
+        <?php
             echo "</div>";
         }
         ?>
+
+
     </div>
 
     <div class="hand" id="hand">
@@ -152,7 +90,39 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
         ?>
     </div>
 
+    <div>
+        <button id='exitButton'> Salir</button>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
     <script>
+        /* ----------------------------SweetAlert2------------------------------------------- */
+
+        function mostrarAlert() {
+            Swal.fire({
+                title: '¿Quieres salir?',
+                text: "No te preocupes, luego puedes continuar tu partida actual.",
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                cancelButtonText: 'Cancelar',
+                confirmButtonText: 'Salir.'
+            }).then((result) => {
+                if (result.isConfirmed) {
+
+                    window.history.back();
+                }
+            });
+        }
+
+        const exitButton = document.getElementById('exitButton');
+        exitButton.addEventListener('click', mostrarAlert);
+    </script>
+
+
+    <script>
+        restaurarEstadoJuego();
+        /* ----------------------------Funciones------------------------------------------- */
+
         var intentosColocacion = 0;
         var mazo = <?php echo json_encode(array_map(function ($card) {
                         return array('number' => $card->getNumber());
@@ -160,12 +130,12 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
         console.log('Mazo en JavaScript:', mazo);
         var draggedCardId;
         var hand = [];
-        var cartasColocadasTotales = 0; //Para checar si gané o no nomas cambie este a 97 y tire una carta :)
+        var cartasColocadasTotales = <?php echo isset($gameState['cartasColocadasTotales']) ? $gameState['cartasColocadasTotales'] : 0; ?>;//Para checar si gané o no nomas cambie este a 97 y tire una carta :)
+        var cartasColocadas = <?php echo isset($gameState['cartasColocadas']) ? $gameState['cartasColocadas'] : 0; ?>;
+
         var button = document.createElement('button');
-        var cartasColocadas = 0;
-        // Crea un elemento de botón
-        button.innerText = 'Robar/Jalar'; // Establece el texto del botón
-        // Agrega un evento al botón
+        //button.innerText = 'Robar/Jalar';
+        button.id = 'robarButton';
         button.addEventListener('click', function() {
             mostrarCartasRestantesEnMazo();
 
@@ -173,13 +143,13 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
                 drawCards(cartasColocadas);
                 cartasColocadas = 0;
             } else {
-                alert('Por favor, para poder jalar coloca al menos 2 cartas antes. ');
+                Swal.fire('Para jalar debes colocar por lo menos 2 cartas.');
             }
         });
         // Añade el botón al cuerpo del documento
         document.body.appendChild(button);
 
-        // Define las reglas de colocación en las pilas
+        // Reglas de colocación en las pilas
         var rules = {
             0: function(cardNumber) {
                 return cardNumber > parseInt(document.getElementById('pile_0').innerText);
@@ -220,10 +190,17 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
             console.log('Robar posible:', robarPosible);
 
             if (!colocacionPosible && !robarPosible) {
-                alert('¡Has perdido! No puedes colocar cartas y no puedes robar más del mazo.');
+                Swal.fire({
+                    title: '¡Vaya!',
+                    text: 'Parece que perdiste.',
+                    imageUrl: 'images/YouLose.gif',
+                    //imageUrl: 'https://img1.picmix.com/output/stamp/normal/7/8/6/4/1984687_608ed.gif',
+                    imageWidth: 400,
+                    imageHeight: 200,
+                    imageAlt: 'Custom image',
+                })
             }
         }
-
 
 
         function ordenarCartasEnMano() {
@@ -236,15 +213,17 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
             for (var i = 0; i < sortedCards.length; i++) {
                 manoDiv.removeChild(sortedCards[i]);
                 manoDiv.appendChild(sortedCards[i]);
+
             }
+
         }
 
         function drawCards(numCardsToDraw) {
             console.log('Intentando robar cartas...');
             for (var i = 0; i < numCardsToDraw; i++) {
                 if (mazo.length > 0) {
-                    var drawnCard = mazo.pop(); // Obtén la carta del mazo
-                    hand.push(drawnCard); // Agrega la carta a la mano
+                    var drawnCard = mazo.pop();
+                    hand.push(drawnCard);
                     console.log('Carta robada:', drawnCard);
 
                     var cardElement = document.createElement('div');
@@ -313,6 +292,7 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
 
                 draggedCardId = null;
             }
+            guardarEstadoJuego();
             verificarPerdida();
             ordenarCartasEnMano();
         }
@@ -372,6 +352,118 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
                 return card.number;
             });
             console.log('Cartas restantes en el mazo:', cartasRestantes);
+        }
+
+        function obtenerEstadoTablero() {
+            var estadoTablero = [];
+
+            for (var i = 0; i < 4; i++) {
+                var pila = document.getElementById(`pile_${i}`);
+                var cartasEnPila = [];
+
+                // Itera sobre las cartas en la pila y obtén sus números
+                for (var j = 0; j < pila.childNodes.length; j++) {
+                    var numeroCarta = parseInt(pila.childNodes[j].textContent);
+                    cartasEnPila.push(numeroCarta);
+                }
+
+                console.log(`Contenido de la pila ${i}:`, cartasEnPila); // Verificar contenido de la pila
+                estadoTablero.push(cartasEnPila);
+            }
+
+            return estadoTablero;
+        }
+
+
+        function obtenerEstadoMano() {
+            var estadoMano = [];
+
+            var mano = document.getElementById('hand');
+
+            for (var i = 0; i < mano.childNodes.length; i++) {
+                var numeroCarta = parseInt(mano.childNodes[i].innerText);
+                estadoMano.push(numeroCarta);
+            }
+
+            return estadoMano;
+        }
+
+
+        function guardarEstadoJuego() {
+            console.log('Guardando estado del juego...');
+            console.log('BPcartasColocadasTotales:', cartasColocadasTotales);
+            console.log('BPcartasColocadas:', cartasColocadas);
+
+            var gameState = {
+                mazo: mazo,
+                cartasColocadasTotales: cartasColocadasTotales,
+                cartasColocadas: cartasColocadas,
+                // Guardar el estado del tablero y la mano
+                estadoTablero: obtenerEstadoTablero(),
+                estadoMano: obtenerEstadoMano()
+            };
+            document.cookie = "gameState=" + JSON.stringify(gameState) + "; path=/";
+        }
+
+
+        window.addEventListener('beforeunload', function(event) {
+            guardarEstadoJuego();
+        });
+
+        function getCookie(name) {
+            var nameEQ = name + "=";
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i];
+                while (cookie.charAt(0) === ' ') cookie = cookie.substring(1, cookie.length);
+                if (cookie.indexOf(nameEQ) === 0) return cookie.substring(nameEQ.length, cookie.length);
+            }
+            return null;
+        }
+
+
+        function restaurarEstadoJuego() {
+            var gameStateCookie = getCookie('gameState');
+            if (gameStateCookie) {
+                var gameState = JSON.parse(gameStateCookie);
+
+                // Restaurar el estado del mazo
+                mazo = gameState.mazo;
+
+                // Restaurar el número total de cartas colocadas
+                cartasColocadasTotales = gameState.cartasColocadasTotales;
+                cartasColocadas = gameState.cartasColocadas;
+
+                // Restaurar el estado del tablero
+                var estadoTablero = gameState.estadoTablero;
+                for (var i = 0; i < estadoTablero.length; i++) {
+                    var pile = document.getElementById(`pile_${i}`);
+                    pile.innerHTML = ''; // Limpiar la pila antes de restaurar
+                    for (var j = 0; j < estadoTablero[i].length; j++) {
+                        var cardNumber = estadoTablero[i][j];
+                        var cardElement = document.createElement('div');
+                        cardElement.classList.add('card');
+                        cardElement.innerText = cardNumber;
+                        pile.appendChild(cardElement);
+                    }
+                }
+
+                // Restaurar el estado de la mano
+                var estadoMano = gameState.estadoMano;
+                var manoDiv = document.getElementById('hand');
+                manoDiv.innerHTML = ''; // Limpiar la mano antes de restaurar
+                for (var j = 0; j < estadoMano.length; j++) {
+                    if (estadoMano[j] !== null) {
+                        var cardElement = document.createElement('div');
+                        cardElement.classList.add('card');
+                        cardElement.draggable = true;
+                        cardElement.id = `hand_card_${j}`;
+                        cardElement.innerText = estadoMano[j];
+                        manoDiv.appendChild(cardElement);
+                        cardElement.addEventListener('dragstart', drag);
+                    }
+                }
+            }
         }
     </script>
 
