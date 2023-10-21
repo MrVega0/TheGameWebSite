@@ -127,16 +127,62 @@
         </tbody>
         <script>
             function startGame() {
-                document.cookie = "mantener=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-                document.cookie = "gameState=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                localStorage.removeItem('gameState');
                 window.location.href = "thegame.php";
             }
+
             function continueGame() {
-                var expDate = new Date();
-                expDate.setTime(expDate.getTime() + (2 * 60 * 60 * 1000));
                 window.location.href = "thegame.php";
             }
+
         </script>
 </body>
 
 </html>
+
+<script>
+    /* 
+   //################################### para pruebas unitaras ##########################
+
+
+    function isMoveValid(cardNumber, pileNumber) {
+    const rule = (cardNumber, pileNumber) => cardNumber < pileNumber;
+    const exception = (cardNumber, pileNumber) => Math.abs(cardNumber - pileNumber) === 10;
+    return rule(cardNumber, pileNumber) || exception(cardNumber, pileNumber);
+
+}
+
+// Función para probar isMoveValid
+function runTests() {
+    console.log('Testing isMoveValid function:');
+
+    // Casos de prueba
+    const testCases = [
+        { card: 20, pile: 30, expected: true },  // Regla básica de pila 1
+        { card: 20, pile: 30, expected: true }, // Excepción (10 menos)
+        { card: 30, pile: 20, expected: true }, // Excepción (10 más)
+    ];
+
+    for (const { card, pile, expected } of testCases) {
+        const result = isMoveValid(card, pile);
+        console.log(`Card: ${card}, Pile: ${pile}, Expected: ${expected}, Result: ${result}`);
+        console.log(`Test ${result === expected ? 'passed' : 'failed'}\n`);
+    }
+}
+
+// Ejecutar las pruebas
+runTests();
+
+// Aquí colocas el código para simular la colocación de 98 cartas
+for (let i = 0; i < 98; i++) {
+        let randomPileIndex = Math.floor(Math.random() * 4);
+        let randomCardNumber = Math.floor(Math.random() * 98) + 2;
+        console.log(`Colocando carta ${randomCardNumber} en la pila ${randomPileIndex}`);
+        placeCard(randomPileIndex);
+
+        // Añade un mensaje para verificar que placeCard se está llamando
+        console.log("Llamada a placeCard");
+    }
+    
+*/
+</script>

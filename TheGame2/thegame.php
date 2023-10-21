@@ -8,23 +8,26 @@
 
 </head>
 <?php
-$gameState = isset($_COOKIE['gameState']) ? json_decode($_COOKIE['gameState'], true) : null;
-
-// Si hay un estado de juego almacenado, usarlo para restaurar el juego
-if ($gameState) {
+/* al parecer esto no es necesario y no funcionaba
+if (isset($gameState)) {
     $mazo = $gameState['mazo'];
     $cartasColocadasTotales = $gameState['cartasColocadasTotales'];
     $cartasColocadas = $gameState['cartasColocadas'];
 
     $estadoTablero = $gameState['estadoTablero'];
     $estadoMano = $gameState['estadoMano'];
-}
+    $semilla = $gameState['semilla'];
 
-$mazo = generarMazo();
-// Reorganiza aleatoriamente el mazo
-shuffle($mazo);
+} else {
+}  */
 
-// Representa una carta
+    $semilla = mt_rand();
+    $mazo = generarMazoConSemilla($semilla);
+    shuffle($mazo);
+
+echo '<div id="divsemilla">Semilla: ' . $semilla . '</div>';
+
+
 class Card
 {
     private $number;
@@ -40,26 +43,52 @@ class Card
     }
 }
 
-// Genera el mazo con números del 2 al 99
-function generarMazo()
+function generarMazoConSemilla($semilla)
 {
+    mt_srand($semilla);
     $mazo = [];
+
     for ($i = 2; $i <= 99; $i++) {
         $mazo[] = new Card($i);
     }
+
+    shuffle($mazo);
+
     return $mazo;
 }
 
+/*
+function generarMazo()
+{
+    $mazo = [];
+    $usedCards = [];
 
-// Tomar las primeras 8 cartas del mazo para la mano
-$cartas_sacadas = array_slice($mazo, 0, 8);
+    // Verificar si hay información en localStorage
+    echo '<script>';
+    echo 'var gameState = localStorage.getItem("gameState");';
+    echo 'if (gameState) {';
+    echo '    gameState = JSON.parse(gameState);';
+    echo '    if (gameState.estadoMano) {';
+    echo '        usedCards = gameState.estadoMano;';
+    echo '    }';
+    echo '}';
+    echo '</script>';
+
+    for ($i = 2; $i <= 99; $i++) {
+        if (!in_array($i, $usedCards)) {
+            $mazo[] = new Card($i);
+        }
+    }
+
+    return $mazo;
+}  */
+
 ?>
 
 <body>
 
     <div class="board">
         <?php
-        // Mostrar las primeras cartas en el tablero (dos cartas con el número 1 y dos cartas con el número 100)
         $primeras_cartas = [
             [1],
             [1],
@@ -70,7 +99,7 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
         foreach ($primeras_cartas as $index => $card) {
 
             echo "<div class='pile' id='pile_$index' ondrop='drop(event, $index)' ondragover='allowDrop(event)'>";
-            echo "{$card[0]}";  // Mostrar el número de la carta
+            echo "{$card[0]}";
         ?>
 
         <?php
@@ -83,20 +112,17 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
 
     <div class="hand" id="hand">
         <?php
-        foreach ($cartas_sacadas as $index => $card) {
-
-            echo "<div class='card' id='card_$index' draggable='true' ondragstart='drag(event)'>{$card->getNumber()}</div>";
-        }
+        echo '<div id="startMessage" style="background-color:white;" >Haz click en el mazo para comenzar</div>';
         ?>
-    </div>
 
+
+    </div>
     <div>
-        <button id='exitButton'> Salir</button>
+        <button id='exitButton'> Salir </button>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
     <script>
         /* ----------------------------SweetAlert2------------------------------------------- */
-
         function mostrarAlert() {
             Swal.fire({
                 title: '¿Quieres salir?',
@@ -113,26 +139,26 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
                 }
             });
         }
-
         const exitButton = document.getElementById('exitButton');
         exitButton.addEventListener('click', mostrarAlert);
     </script>
-
-
     <script>
         restaurarEstadoJuego();
         /* ----------------------------Funciones------------------------------------------- */
-
-        var intentosColocacion = 0;
+        var salirperdiste = false;
         var mazo = <?php echo json_encode(array_map(function ($card) {
                         return array('number' => $card->getNumber());
                     }, $mazo)); ?>;
         console.log('Mazo en JavaScript:', mazo);
         var draggedCardId;
         var hand = [];
-        var cartasColocadasTotales = <?php echo isset($gameState['cartasColocadasTotales']) ? $gameState['cartasColocadasTotales'] : 0; ?>;//Para checar si gané o no nomas cambie este a 97 y tire una carta :)
-        var cartasColocadas = <?php echo isset($gameState['cartasColocadas']) ? $gameState['cartasColocadas'] : 0; ?>;
-
+        var cartasColocadasTotales = 0; //Para checar si gané o no nomas cambie este a 97 y tire una carta :)
+        var cartasColocadas = 8;
+        var gameState = JSON.parse(localStorage.getItem('gameState'));
+        if (gameState) {
+            cartasColocadasTotales = gameState.cartasColocadasTotales;
+            cartasColocadas = gameState.cartasColocadas;
+        }
         var button = document.createElement('button');
         //button.innerText = 'Robar/Jalar';
         button.id = 'robarButton';
@@ -142,14 +168,19 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
             if (cartasColocadas >= 2) {
                 drawCards(cartasColocadas);
                 cartasColocadas = 0;
+                verificarPerdida();
+                var startMessage = document.getElementById('startMessage');
+                if (startMessage) {
+                    startMessage.style.display = 'none';
+                }
             } else {
                 Swal.fire('Para jalar debes colocar por lo menos 2 cartas.');
+
             }
         });
-        // Añade el botón al cuerpo del documento
+
         document.body.appendChild(button);
 
-        // Reglas de colocación en las pilas
         var rules = {
             0: function(cardNumber) {
                 return cardNumber > parseInt(document.getElementById('pile_0').innerText);
@@ -178,7 +209,6 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
                         break;
                     }
                 }
-
                 if (colocacionPosible) {
                     break;
                 }
@@ -194,14 +224,22 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
                     title: '¡Vaya!',
                     text: 'Parece que perdiste.',
                     imageUrl: 'images/YouLose.gif',
-                    //imageUrl: 'https://img1.picmix.com/output/stamp/normal/7/8/6/4/1984687_608ed.gif',
                     imageWidth: 400,
                     imageHeight: 200,
                     imageAlt: 'Custom image',
-                })
+                    showCancelButton: false,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonText: 'Salir.'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        salirperdiste = true;
+                        window.history.back();
+                    }
+                });
             }
         }
-
 
         function ordenarCartasEnMano() {
             var manoDiv = document.getElementById('hand');
@@ -215,7 +253,6 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
                 manoDiv.appendChild(sortedCards[i]);
 
             }
-
         }
 
         function drawCards(numCardsToDraw) {
@@ -244,20 +281,16 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
         ordenarCartasEnMano();
 
 
-
         function removeCardFromHand(cardId) {
             var card = document.getElementById(cardId);
             if (card) {
                 card.remove();
             }
+
         }
 
         function checkException(cardNumber, pileNumber) {
             return (cardNumber === pileNumber - 10) || (cardNumber === pileNumber + 10);
-        }
-
-        function alertPlaceCard(alertaCartasColocadas) {
-
 
         }
 
@@ -281,12 +314,17 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
                         console.log("cartas totales colocadas: ", cartasColocadasTotales);
 
                         if (cartasColocadasTotales === 98) {
-                            alert('¡Felicidades! Has colocado todas las cartas. ¡Ganaste!');
+                            Swal.fire({
+                                title: '¡Felicidades!',
+                                text: 'Colocaste todas las cartas, ¡haz ganado!',
+                                imageUrl: 'images/youWin.gif',
+                                imageWidth: 400,
+                                imageHeight: 200,
+                                imageAlt: 'Custom image',
+                            })
                         }
-
                     } else {
-                        alert('No se puede colocar esta carta según las reglas.');
-                        console.log("No se puede colocar esta carta según las reglas.");
+                        Swal.fire('No puedes colocar esta carta, revisa el orden.');
                     }
                 }
 
@@ -295,12 +333,14 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
             guardarEstadoJuego();
             verificarPerdida();
             ordenarCartasEnMano();
+
         }
 
         function removeCardFromMazo(cardNumber) {
             mazo = mazo.filter(function(card) {
                 return card.number !== cardNumber;
             });
+
         }
 
         function drop(event, pileIndex) {
@@ -315,6 +355,7 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
 
         function allowDrop(event) {
             event.preventDefault();
+
         }
 
         function drag(event) {
@@ -327,18 +368,8 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
                 var pile = document.getElementById(`pile_${i}`);
                 console.log(`Pila ${i + 1}: ${pile.innerText.trim()}`);
             }
+
         }
-
-        //este script es para poner cosas en consola
-        // Mostrar el mazo
-        console.log("Mazo original:", <?php echo json_encode(array_map(function ($card) {
-                                            return $card->getNumber();
-                                        }, $mazo)); ?>);
-
-        // Mostrar la mano
-        console.log("Mano:", <?php echo json_encode(array_map(function ($card) {
-                                    return $card->getNumber();
-                                }, $cartas_sacadas)); ?>);
 
         function showCardsInPiles() {
             for (var i = 0; i < 4; i++) {
@@ -348,9 +379,7 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
         }
 
         function mostrarCartasRestantesEnMazo() {
-            var cartasRestantes = mazo.slice(hand.length + cartasColocadasTotales).map(function(card) {
-                return card.number;
-            });
+            var cartasRestantes = mazo.length;
             console.log('Cartas restantes en el mazo:', cartasRestantes);
         }
 
@@ -384,61 +413,57 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
                 var numeroCarta = parseInt(mano.childNodes[i].innerText);
                 estadoMano.push(numeroCarta);
             }
-
+            console.log('Estado de mano ', estadoMano);
             return estadoMano;
         }
 
-
         function guardarEstadoJuego() {
             console.log('Guardando estado del juego...');
-            console.log('BPcartasColocadasTotales:', cartasColocadasTotales);
-            console.log('BPcartasColocadas:', cartasColocadas);
 
             var gameState = {
                 mazo: mazo,
                 cartasColocadasTotales: cartasColocadasTotales,
                 cartasColocadas: cartasColocadas,
-                // Guardar el estado del tablero y la mano
                 estadoTablero: obtenerEstadoTablero(),
-                estadoMano: obtenerEstadoMano()
+                estadoMano: obtenerEstadoMano(),
+                semilla: <?php echo $semilla; ?>,
             };
-            document.cookie = "gameState=" + JSON.stringify(gameState) + "; path=/";
+
+            localStorage.setItem('gameState', JSON.stringify(gameState));
+            verificarPerdida();
+        }
+
+        function salirPorquePerdiste() {
+            if (salirperdiste) {
+                localStorage.removeItem('gameState');
+                window.history.back();
+            } else {
+                guardarEstadoJuego();
+            }
         }
 
 
         window.addEventListener('beforeunload', function(event) {
-            guardarEstadoJuego();
+            salirPorquePerdiste();
         });
 
-        function getCookie(name) {
-            var nameEQ = name + "=";
-            var cookies = document.cookie.split(';');
-            for (var i = 0; i < cookies.length; i++) {
-                var cookie = cookies[i];
-                while (cookie.charAt(0) === ' ') cookie = cookie.substring(1, cookie.length);
-                if (cookie.indexOf(nameEQ) === 0) return cookie.substring(nameEQ.length, cookie.length);
-            }
-            return null;
-        }
-
-
         function restaurarEstadoJuego() {
-            var gameStateCookie = getCookie('gameState');
-            if (gameStateCookie) {
-                var gameState = JSON.parse(gameStateCookie);
+            console.log('Restaurando estado del juego...');
+            var gameState = localStorage.getItem('gameState');
 
-                // Restaurar el estado del mazo
+            if (gameState) {
+                gameState = JSON.parse(gameState);
+
                 mazo = gameState.mazo;
-
-                // Restaurar el número total de cartas colocadas
                 cartasColocadasTotales = gameState.cartasColocadasTotales;
                 cartasColocadas = gameState.cartasColocadas;
-
+                var semilla = gameState.semilla;
+                $semilla = semilla;
                 // Restaurar el estado del tablero
                 var estadoTablero = gameState.estadoTablero;
                 for (var i = 0; i < estadoTablero.length; i++) {
                     var pile = document.getElementById(`pile_${i}`);
-                    pile.innerHTML = ''; // Limpiar la pila antes de restaurar
+                    pile.innerHTML = '';
                     for (var j = 0; j < estadoTablero[i].length; j++) {
                         var cardNumber = estadoTablero[i][j];
                         var cardElement = document.createElement('div');
@@ -451,7 +476,7 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
                 // Restaurar el estado de la mano
                 var estadoMano = gameState.estadoMano;
                 var manoDiv = document.getElementById('hand');
-                manoDiv.innerHTML = ''; // Limpiar la mano antes de restaurar
+                manoDiv.innerHTML = '';
                 for (var j = 0; j < estadoMano.length; j++) {
                     if (estadoMano[j] !== null) {
                         var cardElement = document.createElement('div');
@@ -468,52 +493,5 @@ $cartas_sacadas = array_slice($mazo, 0, 8);
     </script>
 
 </body>
-
-<script>
-    /* 
-   //################################### para pruebas unitaras ##########################
-
-
-    function isMoveValid(cardNumber, pileNumber) {
-    const rule = (cardNumber, pileNumber) => cardNumber < pileNumber;
-    const exception = (cardNumber, pileNumber) => Math.abs(cardNumber - pileNumber) === 10;
-    return rule(cardNumber, pileNumber) || exception(cardNumber, pileNumber);
-
-}
-
-// Función para probar isMoveValid
-function runTests() {
-    console.log('Testing isMoveValid function:');
-
-    // Casos de prueba
-    const testCases = [
-        { card: 20, pile: 30, expected: true },  // Regla básica de pila 1
-        { card: 20, pile: 30, expected: true }, // Excepción (10 menos)
-        { card: 30, pile: 20, expected: true }, // Excepción (10 más)
-    ];
-
-    for (const { card, pile, expected } of testCases) {
-        const result = isMoveValid(card, pile);
-        console.log(`Card: ${card}, Pile: ${pile}, Expected: ${expected}, Result: ${result}`);
-        console.log(`Test ${result === expected ? 'passed' : 'failed'}\n`);
-    }
-}
-
-// Ejecutar las pruebas
-runTests();
-
-// Aquí colocas el código para simular la colocación de 98 cartas
-for (let i = 0; i < 98; i++) {
-        let randomPileIndex = Math.floor(Math.random() * 4);
-        let randomCardNumber = Math.floor(Math.random() * 98) + 2;
-        console.log(`Colocando carta ${randomCardNumber} en la pila ${randomPileIndex}`);
-        placeCard(randomPileIndex);
-
-        // Añade un mensaje para verificar que placeCard se está llamando
-        console.log("Llamada a placeCard");
-    }
-    
-*/
-</script>
 
 </html>
